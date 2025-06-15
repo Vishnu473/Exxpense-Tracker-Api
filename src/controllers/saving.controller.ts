@@ -154,3 +154,27 @@ export const deleteSaving = async (req: Request, res: Response) => {
     return;
   }
 };
+
+interface FileCategoryRequest extends Request {
+  file?: Express.Multer.File;
+  fileCategory?: 'image';
+}
+
+export const uploadSingleFile = (req: FileCategoryRequest, res: Response): void => {
+  try {
+    if (!req.file) {
+      res.status(400).json({message:'No file uploaded'});
+    }
+
+    res.json({
+      success: true,
+      url: req?.file?.path,
+      file: req.file,
+      message: `${req.fileCategory} uploaded successfully`,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: 'Internal Server Error. Failed to upload Image to Api',
+    });
+  }
+};

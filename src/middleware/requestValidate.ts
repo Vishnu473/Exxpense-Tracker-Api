@@ -6,6 +6,6 @@ export const validate = (schema: ZodSchema<any>) => (req: Request, res: Response
     schema.parse(req.body);
     next();
   } catch (error: any) {
-    res.status(400).json({  message: 'Validation middleware error', error: error?.errors[0]?.message || error});
+    res.status(400).json({  message: 'Validation middleware error', error: error});
   }
 };
