@@ -41,6 +41,46 @@ export const getWalletByUserId = async (req: Request, res: Response) => {
   }
 };
 
+export const getWalletSummary = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?._id;
+
+    console.log(userId);
+    
+    // Aggregate income
+    const incomeAgg = await TransactionModel.aggregate([
+      { $match: { user: userId, category_type: 'income' } },
+      { $group: { _id: null, total: { $sum: '$amount' } } }
+    ]);
+    const income = incomeAgg[0]?.total || 0;
+
+    // Aggregate expense
+    const expenseAgg = await TransactionModel.aggregate([
+      { $match: { user: userId, category_type: 'expense' } },
+      { $group: { _id: null, total: { $sum: '$amount' } } }
+    ]);
+    const expense = expenseAgg[0]?.total || 0;
+
+    // Aggregate savings
+    const savingsAgg = await SavingModel.aggregate([
+      { $match: { user: userId } },
+      { $group: { _id: null, total: { $sum: '$current_amount' } } }
+    ]);
+    const savings = savingsAgg[0]?.total || 0;
+
+    const balance = income - expense - savings;
+    console.log(balance,income,expense, savings);
+    
+    res.status(200).json({ income, expense, savings, balance });
+    return;
+  } catch (error) {
+    console.error('Error computing wallet summary:', error);
+    res.status(500).json({ message: 'Error computing wallet summary' });
+    return;
+  }
+};
+
+
 export const getSourceAnalytics = async (req: Request, res: Response) => {
   try {
     const userId = req.user?._id;
