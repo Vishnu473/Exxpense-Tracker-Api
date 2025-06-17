@@ -69,11 +69,9 @@ export const updateTransaction = async (req: Request, res: Response) => {
     }
 
     const forbiddenFields: (keyof ITransaction)[] = [
-      'amount',
       'category_id',
       'source',
       'source_detail',
-      'transaction_date'
     ];
 
     for (const field of forbiddenFields) {
@@ -104,7 +102,9 @@ export const updateTransaction = async (req: Request, res: Response) => {
     const updatableFields: (keyof ITransaction)[] = [
       'description',
       'payment_app',
-      'status'
+      'status',
+      'transaction_date',
+      'amount' //Using transaction_date and amount here to track savings, Don't include amount in transaction update.
     ];
 
     const updateData: Partial<ITransaction> = {};

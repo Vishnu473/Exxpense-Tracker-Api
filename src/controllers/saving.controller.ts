@@ -1,11 +1,14 @@
 import { Request, Response } from 'express';
 import { SavingModel } from '../models/saving.model';
-import { savingSchema } from '../zod/saving.schema';
+import { createSavingSchema, savingSchema } from '../zod/saving.schema';
 import { ISaving } from '../interfaces/saving.interface';
+import { TransactionModel } from '../models/transaction.model';
+import { ITransaction } from '../interfaces/transaction.interface';
+import { CategoryModel } from '../models/category.model';
 
 export const createSaving = async (req: Request, res: Response) => {
   try {
-    const parsed = savingSchema.safeParse(req.body);
+    const parsed = createSavingSchema.safeParse(req.body);
 
     if (!parsed.success) {
       res.status(400).json({ errors: parsed.error.flatten().fieldErrors });
@@ -14,23 +17,32 @@ export const createSaving = async (req: Request, res: Response) => {
 
     const data = parsed.data;
 
-    if (data.current_amount > data.amount) {
-      res.status(400).json({
-        message: 'Current amount cannot exceed target amount.',
-        help: 'Add a larger target or reduce initial saving.'
-      });
-      return;
-    }
-
     const newSaving = {
       ...data,
       user: req?.user?._id,
-      is_completed: data.current_amount === data.amount
+      is_completed: false,
+      current_amount: 0,
     };
-
     const created = await SavingModel.create(newSaving);
+    
+    const categories = await CategoryModel.find({isUserDefined:false});
+    const savingCategory = categories.filter((cat) => cat.type === "saving");
+    const savingTransaction = {
+      amount: 0,
+      source: data.source,
+      source_detail:data.source_detail,
+      payment_app: data.payment_app,
+      description: `Initial saving: ${data.purpose}`,
+      user: req?.user?._id,
+      category_id: savingCategory[0]?._id,
+      category_type:'saving',
+      category_name:savingCategory[0]?.name,
+      status: 'Success',
+      transaction_date: new Date(data.transaction_date)
+    }
+    await TransactionModel.create(savingTransaction);
     res.status(201).json(created);
-    return ;
+    return;
 
   } catch (error) {
     console.error('Error creating saving:', error);
@@ -59,6 +71,9 @@ export const updateSaving = async (req: Request, res: Response) => {
       user: req.user._id
     });
 
+    console.log(existing);
+    
+
     if (!existing) {
       res.status(404).json({ message: 'Saving goal not found.' });
       return;
@@ -66,7 +81,6 @@ export const updateSaving = async (req: Request, res: Response) => {
 
     const forbiddenFields: (keyof ISaving)[] = [
       'amount',
-      'transaction_date',
       'expected_at',
       'source',
       'source_detail',
@@ -81,7 +95,7 @@ export const updateSaving = async (req: Request, res: Response) => {
 
       let areEqual = false;
 
-      if (field === 'transaction_date' || field === 'expected_at') {
+      if (field === 'expected_at') {
         const reqDate = new Date(reqValue).toISOString().split('T')[0];
         const existingDate = new Date(existingValue as Date).toISOString().split('T')[0];
         areEqual = reqDate === existingDate;
@@ -98,7 +112,7 @@ export const updateSaving = async (req: Request, res: Response) => {
       }
     }
 
-    const updatableFields: (keyof ISaving)[] = ['purpose', 'pic', 'current_amount'];
+    const updatableFields: (keyof ISaving)[] = ['purpose', 'transaction_date', 'pic', 'current_amount'];
     const updateData: Partial<ISaving> = {};
 
     for (const field of updatableFields) {
@@ -124,6 +138,16 @@ export const updateSaving = async (req: Request, res: Response) => {
       } else {
         updateData[field] = req.body[field];
       }
+
+      if (field === 'transaction_date') {
+        const transaction_date = new Date(req.body[field]).toISOString().split('T')[0];
+        if (new Date(transaction_date) <= new Date()) {
+          res.status(400).json({ message: 'Transaction date cannot be the future date.' });
+          return;
+        } else {
+          updateData[field] = req.body[field];
+        }
+      }
     }
 
     const updated = await SavingModel.findOneAndUpdate(
@@ -131,6 +155,24 @@ export const updateSaving = async (req: Request, res: Response) => {
       updateData,
       { new: true }
     );
+
+    const categories = await CategoryModel.find({isUserDefined:false});
+    const savingCategory = categories.filter((cat) => cat.type === "saving");
+
+    const updateSavingTransaction = {
+      amount:  Number(req.body["current_amount"])-existing.current_amount,
+      source: existing.source,
+      source_detail:existing.source_detail,
+      payment_app: existing.payment_app,
+      description: `Added to saving: ${updateData.purpose}`,
+      user: req?.user?._id,
+      category_id: savingCategory[0]?._id,
+      category_type:'saving',
+      category_name:savingCategory[0]?.name,
+      status: 'Success',
+      transaction_date: new Date(new Date(req.body["transaction_date"]).toISOString().split('T')[0])
+    }
+    await TransactionModel.create(updateSavingTransaction);
 
     res.status(200).json(updated);
   } catch (error) {
@@ -163,7 +205,7 @@ interface FileCategoryRequest extends Request {
 export const uploadSingleFile = (req: FileCategoryRequest, res: Response): void => {
   try {
     if (!req.file) {
-      res.status(400).json({message:'No file uploaded'});
+      res.status(400).json({ message: 'No file uploaded' });
     }
 
     res.json({

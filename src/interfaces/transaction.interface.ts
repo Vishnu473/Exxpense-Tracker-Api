@@ -9,7 +9,7 @@ export interface ITransaction extends Document {
     description: string;
     user: Types.ObjectId;
     category_id: Types.ObjectId;
-    category_type: 'income' | 'expense';
+    category_type: 'income' | 'expense' | 'saving';
     category_name: string;
     status: 'Pending' | 'Success' | 'Failed';
     transaction_date: Date;

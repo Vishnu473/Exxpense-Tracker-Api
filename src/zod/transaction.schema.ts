@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 export const transactionSchema = z
   .object({
-    amount: z.number({ required_error: 'Amount is required' }).positive('Amount must be positive'),
+    amount: z.number({ required_error: 'Amount is required' }),//Always ensure the amount is positive from user(FrontEnd)
 
     source: z.enum(['Cash', 'Bank Account', 'Other'], {
       required_error: 'Source is required',
@@ -37,10 +37,6 @@ export const transactionSchema = z
       }
       return true;
     },
-    {
-      message: 'source_detail is required when source is Bank Account',
-      path: ['source_detail'],
-    }
   );
 
 export const getTransactionsQuerySchema = z.object({
@@ -58,7 +54,7 @@ export const getTransactionsQuerySchema = z.object({
   toDate: z.string().refine((val) => !isNaN(Date.parse(val)), {
     message: 'Invalid toDate format',
   }).optional(),
-  category_type: z.enum(['income', 'expense']).optional(),
+  category_type: z.enum(['income', 'expense','saving']).optional(),
   
   // Sorting
   sortBy: z.enum(['amount', 'transaction_date']).default('transaction_date'),

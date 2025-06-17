@@ -13,10 +13,10 @@ const savingSchema = new mongoose.Schema<ISaving>(
     },
     purpose: { type: String, required: true },
     is_completed: { type: Boolean, default: false },
-    current_amount: { type: Number, required: true },
+    current_amount: { type: Number},
     expected_at: { type: Date, required: true },
     amount: { type: Number, required: true },
-    transaction_date: { type: Date, required: true },
+    transaction_date: { type: Date},
     pic: { type: String }, // optional, for V2
   },
   { timestamps: true }

@@ -4,7 +4,7 @@ export interface ICategory extends Document {
     _id: Types.ObjectId;
     user: Types.ObjectId;
     name: string;
-    type: 'income' | 'expense';
+    type: 'income' | 'expense' | 'saving';
     isUserDefined: boolean;
     createdAt?: Date;
     updatedAt?: Date;

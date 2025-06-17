@@ -11,10 +11,10 @@ const transactionSchema = new mongoose.Schema<ITransaction>(
     description: { type: String, required: true },
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     category_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Category', required: true },
-    category_type: { type: String, enum: ['income', 'expense'], required: true },
+    category_type: { type: String, enum: ['income', 'expense','saving'], required: true },
     category_name: { type: String, required: true },
     status: { type: String, enum: ['Pending', 'Success', 'Failed'], default: 'Success' },
-    transaction_date: { type: Date, required: true },
+    transaction_date: { type: Date},
   },
   { timestamps: true }
 );
