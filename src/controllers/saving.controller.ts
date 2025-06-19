@@ -141,7 +141,7 @@ export const updateSaving = async (req: Request, res: Response) => {
 
       if (field === 'transaction_date') {
         const transaction_date = new Date(req.body[field]).toISOString().split('T')[0];
-        if (new Date(transaction_date) <= new Date()) {
+        if (new Date(transaction_date) > new Date()) {
           res.status(400).json({ message: 'Transaction date cannot be the future date.' });
           return;
         } else {

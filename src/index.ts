@@ -8,6 +8,7 @@ import categoryRoutes from "./routes/category.route";
 import transactionRoutes from "./routes/transaction.route";
 import savingRoutes from "./routes/saving.route";
 import walletRoutes from "./routes/wallet.route";
+import analyticRoutes from "./routes/anlaytics.route";
 
 dotenv.config();
 
@@ -29,6 +30,7 @@ app.use('/api/v1/category', categoryRoutes);
 app.use('/api/v1/transaction', transactionRoutes);
 app.use('/api/v1/saving', savingRoutes);
 app.use('/api/v1/wallet', walletRoutes);
+app.use('/api/v1/analytics',analyticRoutes);
 
 app.get('/api/v1/check',async(req:Request,res:Response) => {
     res.json("✅ Server is running and is healthy")

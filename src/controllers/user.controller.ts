@@ -1,8 +1,10 @@
 import { Request, Response } from 'express';
 import { UserModel } from '../models/user.model';
 import { hashPassword, comparePassword } from '../utils/hash.utils';
-import { generateToken } from '../utils/jwt.utils';
+import { generateAccessToken, generateRefreshToken, verifyToken } from '../utils/jwt.utils';
 import { WalletModel } from '../models/wallet.model';
+import { IUser } from '../interfaces/user.interface';
+import jwt, { JwtPayload } from 'jsonwebtoken';
 
 export const registerUser = async (req: Request, res: Response) => {
   try {
@@ -23,12 +25,22 @@ export const registerUser = async (req: Request, res: Response) => {
       savings: 0,
     });
 
-    const token = generateToken(user._id.toString());
+    const token = generateAccessToken(user._id.toString());
     res.cookie('token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+      // maxAge: 7 * 24 * 60 * 60 * 1000,
+      maxAge: 1 * 60 * 60 * 1000,
+    });
+
+    const newRefreshToken = generateRefreshToken(user?._id.toString());
+    res.cookie('refreshToken', newRefreshToken, {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+      // maxAge: 21 * 24 * 60 * 60 * 1000,
+      maxAge: 5 * 60 * 1000,
     });
 
     res.status(201).json({ user: { name: user.name, email: user.email, phone: user.phone }, "message": " Registration successful" });
@@ -48,30 +60,89 @@ export const loginUser = async (req: Request, res: Response) => {
       return;
     }
     if (!user.password) {
-  res.status(500).json({ message: 'User password is missing or corrupted.' });
-  return;
-}
-    
+      res.status(500).json({ message: 'User password is missing or corrupted.' });
+      return;
+    }
+
     const isMatch = await comparePassword(password, user.password);
     if (!isMatch) {
       res.status(400).json({ message: 'Invalid credentials' });
       return;
     }
-    
-    const token = generateToken(user._id.toString());
+
+    const token = generateAccessToken(user._id.toString());
     res.cookie('token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+      // maxAge: 7 * 24 * 60 * 60 * 1000,
+      maxAge: 1 * 60 * 1000,
     });
-    
+    const newRefreshToken = generateRefreshToken(user?._id.toString());
+    res.cookie('refreshToken', newRefreshToken, {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+      // maxAge: 21 * 24 * 60 * 60 * 1000,
+      maxAge: 5 * 60 * 1000,
+    });
 
     res.status(200).json({ user: { name: user.name, email: user.email, phone: user.phone }, message: 'LoggedIn successfully' });
     return;
   } catch (error) {
     res.status(500).json({ message: 'Failed to login user', error });
     return;
+  }
+};
+
+export const refresh = async (req: Request, res: Response) => {
+  const token = req.cookies?.refreshToken;
+  if (!token) {
+    res.status(401).json({ message: 'No refresh token' });
+    return;
+  }
+
+  try {
+    const decoded = verifyToken(token) as JwtPayload;
+
+    const newAccessToken = generateAccessToken(decoded.userId);
+    res.cookie('token', newAccessToken, { httpOnly: true, sameSite: 'lax', secure: false });
+
+    // Rotate refresh token if near expiry
+    if (typeof decoded.exp === 'number') {
+      const expiresInMs = decoded.exp * 1000 - Date.now();
+      if (expiresInMs < 3 * 60 * 1000) {
+        const newRefreshToken = generateRefreshToken(decoded.userId);
+        res.cookie('refreshToken', newRefreshToken, { httpOnly: true, sameSite: 'lax', secure: false });
+      }
+    }
+
+    res.status(200).json({ message: 'Refreshed' });
+  } catch (err) {
+    console.log('Refresh failed:', err);
+    res.status(401).json({ message: 'Refresh token expired' });
+    return;
+  }
+};
+
+
+export const updateUser = async (req: Request, res: Response) => {
+  try {
+    const { name, email, phone } = req.body;
+    const userId = req.user?._id;
+    const user = await UserModel.findById(userId);
+    if (!user) {
+      res.status(404).json({ message: 'User not found' });
+      return;
+    }
+
+    const updateData: Partial<IUser> = { name, email, phone };
+    const updated = await UserModel.findByIdAndUpdate(userId, updateData, { new: true }).select("-password -bankAccounts");
+
+    res.status(200).json(updated);
+  } catch (error) {
+    console.error('❌ Error updating user:', error);
+    res.status(500).json({ message: 'Failed to update the user', error })
   }
 };
 
@@ -213,7 +284,7 @@ export const removeBankAccount = async (req: Request, res: Response) => {
 
 export const getPaymentSources = async (req: Request, res: Response) => {
   try {
-    const user = await UserModel.findById(req.user?._id).select('bankAccounts creditCards');
+    const user = await UserModel.findById(req.user?._id).select('bankAccounts');
     if (!user) {
       res.status(404).json({ message: 'User not found' });
       return;
