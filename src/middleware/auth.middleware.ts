@@ -44,8 +44,8 @@ export const protect = async (req: Request, res: Response, next: NextFunction) =
             httpOnly: true,
             sameSite: 'lax',
             secure: process.env.NODE_ENV === 'production',
-            // maxAge: 21 * 24 * 60 * 60 * 1000,
-            maxAge: 5 * 60 * 1000,
+            maxAge: 21 * 24 * 60 * 60 * 1000,
+            // maxAge: 5 * 60 * 1000,
           });
 
           console.log("Just refreshed the refesh token");
@@ -57,8 +57,8 @@ export const protect = async (req: Request, res: Response, next: NextFunction) =
           httpOnly: true,
           sameSite: 'lax',
           secure: process.env.NODE_ENV === 'production',
-          // maxAge: 7 * 24 * 60 * 60 * 1000,
-          maxAge: 1 * 60 * 1000,
+          maxAge: 7 * 24 * 60 * 60 * 1000,
+          // maxAge: 1 * 60 * 1000,
         });
 
         console.log("Just refreshed the Access token");

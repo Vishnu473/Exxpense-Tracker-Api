@@ -39,8 +39,8 @@ export const registerUser = async (req: Request, res: Response) => {
       httpOnly: true,
       sameSite: 'lax',
       secure: process.env.NODE_ENV === 'production',
-      // maxAge: 21 * 24 * 60 * 60 * 1000,
-      maxAge: 5 * 60 * 1000,
+      maxAge: 21 * 24 * 60 * 60 * 1000,
+      // maxAge: 5 * 60 * 1000,
     });
 
     res.status(201).json({ user: { name: user.name, email: user.email, phone: user.phone }, "message": " Registration successful" });
@@ -75,8 +75,8 @@ export const loginUser = async (req: Request, res: Response) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: 'lax',
-      // maxAge: 7 * 24 * 60 * 60 * 1000,
-      maxAge: 1 * 60 * 1000,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      // maxAge: 1 * 60 * 1000,
     });
     const newRefreshToken = generateRefreshToken(user?._id.toString());
     res.cookie('refreshToken', newRefreshToken, {
