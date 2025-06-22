@@ -29,7 +29,7 @@ export const registerUser = async (req: Request, res: Response) => {
     res.cookie('token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: 'none',
       // maxAge: 7 * 24 * 60 * 60 * 1000,
       maxAge: 1 * 60 * 60 * 1000,
     });
@@ -37,7 +37,7 @@ export const registerUser = async (req: Request, res: Response) => {
     const newRefreshToken = generateRefreshToken(user?._id.toString());
     res.cookie('refreshToken', newRefreshToken, {
       httpOnly: true,
-      sameSite: 'lax',
+      sameSite: 'none',
       secure: process.env.NODE_ENV === 'production',
       maxAge: 21 * 24 * 60 * 60 * 1000,
       // maxAge: 5 * 60 * 1000,
@@ -74,14 +74,14 @@ export const loginUser = async (req: Request, res: Response) => {
     res.cookie('token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: 'lax',
+      sameSite: 'none',
       maxAge: 7 * 24 * 60 * 60 * 1000,
       // maxAge: 1 * 60 * 1000,
     });
     const newRefreshToken = generateRefreshToken(user?._id.toString());
     res.cookie('refreshToken', newRefreshToken, {
       httpOnly: true,
-      sameSite: 'lax',
+      sameSite: 'none',
       secure: process.env.NODE_ENV === 'production',
       // maxAge: 21 * 24 * 60 * 60 * 1000,
       maxAge: 5 * 60 * 1000,
@@ -106,14 +106,14 @@ export const refresh = async (req: Request, res: Response) => {
     const decoded = verifyToken(token) as JwtPayload;
 
     const newAccessToken = generateAccessToken(decoded.userId);
-    res.cookie('token', newAccessToken, { httpOnly: true, sameSite: 'lax', secure: false });
+    res.cookie('token', newAccessToken, { httpOnly: true, sameSite: 'none', secure: false });
 
     // Rotate refresh token if near expiry
     if (typeof decoded.exp === 'number') {
       const expiresInMs = decoded.exp * 1000 - Date.now();
       if (expiresInMs < 3 * 60 * 1000) {
         const newRefreshToken = generateRefreshToken(decoded.userId);
-        res.cookie('refreshToken', newRefreshToken, { httpOnly: true, sameSite: 'lax', secure: false });
+        res.cookie('refreshToken', newRefreshToken, { httpOnly: true, sameSite: 'none', secure: false });
       }
     }
 
@@ -302,7 +302,8 @@ export const getPaymentSources = async (req: Request, res: Response) => {
 
 export const logoutUser = (req: Request, res: Response) => {
   try {
-    res.clearCookie('token').json({ message: 'Logged out successfully' });
+    res.clearCookie('token');
+    res.clearCookie('refreshToken').json({ message: 'Logged out successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Failed to logout', error });
     return;

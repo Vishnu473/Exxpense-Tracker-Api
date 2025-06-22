@@ -42,7 +42,7 @@ export const protect = async (req: Request, res: Response, next: NextFunction) =
           const newRefreshToken = generateRefreshToken(user?._id.toString());
           res.cookie('refreshToken', newRefreshToken, {
             httpOnly: true,
-            sameSite: 'lax',
+            sameSite: 'none',
             secure: process.env.NODE_ENV === 'production',
             maxAge: 21 * 24 * 60 * 60 * 1000,
             // maxAge: 5 * 60 * 1000,
@@ -55,7 +55,7 @@ export const protect = async (req: Request, res: Response, next: NextFunction) =
         const newAccessToken = generateAccessToken(user?._id.toString());
         res.cookie('token', newAccessToken, {
           httpOnly: true,
-          sameSite: 'lax',
+          sameSite: 'none',
           secure: process.env.NODE_ENV === 'production',
           maxAge: 7 * 24 * 60 * 60 * 1000,
           // maxAge: 1 * 60 * 1000,
