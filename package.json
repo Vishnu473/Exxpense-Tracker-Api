@@ -24,6 +24,7 @@
     "mongoose": "^8.15.2",
     "multer": "^2.0.1",
     "multer-storage-cloudinary": "^4.0.0",
+    "resend": "^4.6.0",
     "zod": "^3.25.63"
   },
   "devDependencies": {

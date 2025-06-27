@@ -14,7 +14,7 @@ export const createCategory = async (req: Request, res: Response) => {
             name,
             type,
             user: req?.user?._id,
-            isUserDefined: false,
+            isUserDefined: true,
         };
 
         const category = await CategoryModel.create(newCategory);
