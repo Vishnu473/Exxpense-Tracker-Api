@@ -5,7 +5,10 @@ import { UserModel } from '../models/user.model';
 export const protect = async (req: Request, res: Response, next: NextFunction) => {
   const accessToken = req.cookies.token;
   const refreshToken = req.cookies.refreshToken;
-
+  
+  console.log("accessToken",accessToken);
+  console.log("refreshToken",refreshToken);
+  
   if (!accessToken) {
     res.status(401).json({ message: 'Not authenticated' });
     return;
@@ -45,7 +48,6 @@ export const protect = async (req: Request, res: Response, next: NextFunction) =
             sameSite: 'none',
             secure: process.env.NODE_ENV === 'production',
             maxAge: 21 * 24 * 60 * 60 * 1000,
-            // maxAge: 5 * 60 * 1000,
           });
 
           console.log("Just refreshed the refesh token");
@@ -58,7 +60,6 @@ export const protect = async (req: Request, res: Response, next: NextFunction) =
           sameSite: 'none',
           secure: process.env.NODE_ENV === 'production',
           maxAge: 7 * 24 * 60 * 60 * 1000,
-          // maxAge: 1 * 60 * 1000,
         });
 
         console.log("Just refreshed the Access token");

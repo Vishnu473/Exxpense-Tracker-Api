@@ -30,8 +30,7 @@ export const registerUser = async (req: Request, res: Response) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'none',
-      // maxAge: 7 * 24 * 60 * 60 * 1000,
-      maxAge: 1 * 60 * 60 * 1000,
+      maxAge: 7* 24 * 60 * 60 * 1000,
     });
 
     const newRefreshToken = generateRefreshToken(user?._id.toString());
@@ -40,7 +39,6 @@ export const registerUser = async (req: Request, res: Response) => {
       sameSite: 'none',
       secure: process.env.NODE_ENV === 'production',
       maxAge: 21 * 24 * 60 * 60 * 1000,
-      // maxAge: 5 * 60 * 1000,
     });
 
     res.status(201).json({ user: { name: user.name, email: user.email, phone: user.phone }, "message": " Registration successful" });
@@ -76,15 +74,13 @@ export const loginUser = async (req: Request, res: Response) => {
       secure: process.env.NODE_ENV === "production",
       sameSite: 'none',
       maxAge: 7 * 24 * 60 * 60 * 1000,
-      // maxAge: 1 * 60 * 1000,
     });
     const newRefreshToken = generateRefreshToken(user?._id.toString());
     res.cookie('refreshToken', newRefreshToken, {
       httpOnly: true,
       sameSite: 'none',
       secure: process.env.NODE_ENV === 'production',
-      // maxAge: 21 * 24 * 60 * 60 * 1000,
-      maxAge: 5 * 60 * 1000,
+      maxAge: 21 * 24 * 60 * 60 * 1000,
     });
 
     res.status(200).json({ user: { name: user.name, email: user.email, phone: user.phone }, message: 'LoggedIn successfully' });
@@ -124,7 +120,6 @@ export const refresh = async (req: Request, res: Response) => {
     return;
   }
 };
-
 
 export const updateUser = async (req: Request, res: Response) => {
   try {
@@ -197,41 +192,6 @@ export const renameBankAccount = async (req: Request, res: Response) => {
   }
 };
 
-// export const renameCreditCard = async (req: Request, res: Response) => {
-//   try {
-//     const { oldName, newName } = req.body;
-//     const userId = req.user?._id;
-
-//     const user = await UserModel.findById(userId);
-//     if (!user) {
-//       res.status(404).json({ message: 'User not found' });
-//       return;
-//     }
-//     if (oldName === newName) {
-//       res.status(400).json({ message: 'OldName and newName are both same' });
-//       return;
-//     }
-//     const index = user.creditCards.indexOf(oldName);
-//     if (index === -1) {
-//       res.status(404).json({ message: 'Old credit card not found' });
-//       return;
-//     }
-//     if (user.creditCards.indexOf(newName) !== -1) {
-//       res.status(400).json({ message: 'credit card with that name is already available. Enter last 4 digits to differentiate.' });
-//       return;
-//     }
-
-//     user.creditCards[index] = newName;
-//     await user.save();
-
-//     res.status(200).json({ message: 'Credit card renamed', creditCards: user.creditCards });
-//     return;
-//   } catch (error) {
-//     res.status(500).json({ message: 'Failed to rename credit card', error });
-//     return;
-//   }
-// };
-
 export const removeBankAccount = async (req: Request, res: Response) => {
   try {
     const { name } = req.body;
@@ -249,38 +209,6 @@ export const removeBankAccount = async (req: Request, res: Response) => {
     return;
   }
 };
-
-// export const addCreditCard = async (req: Request, res: Response) => {
-//   try {
-//     const { name } = req.body;
-//     const userId = req.user?._id;
-
-//     const updated = await UserModel.findByIdAndUpdate(
-//       userId,
-//       { $addToSet: { creditCards: name.trim() } },
-//       { new: true }
-//     );
-//     res.status(200).json({ message: 'Credit card added', creditCards: updated?.creditCards });
-//   } catch (error) {
-//     res.status(500).json({ message: 'Failed to add credit card', error });
-//   }
-// };
-
-// export const removeCreditCard = async (req: Request, res: Response) => {
-//   try {
-//     const { name } = req.body;
-//     const userId = req.user?._id;
-
-//     const updated = await UserModel.findByIdAndUpdate(
-//       userId,
-//       { $pull: { creditCards: name.trim() } },
-//       { new: true }
-//     );
-//     res.status(200).json({ message: 'Credit card removed', creditCards: updated?.creditCards });
-//   } catch (error) {
-//     res.status(500).json({ message: 'Failed to remove credit card', error });
-//   }
-// };
 
 export const getPaymentSources = async (req: Request, res: Response) => {
   try {
