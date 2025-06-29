@@ -1,6 +1,5 @@
 import mongoose from 'mongoose';
 import { ISaving } from '../interfaces/saving.interface';
-import { updateWallet } from '../utils/wallet.utils';
 
 const savingSchema = new mongoose.Schema<ISaving>(
   {
@@ -22,33 +21,33 @@ const savingSchema = new mongoose.Schema<ISaving>(
   { timestamps: true }
 );
 
-// 1. On save (create)
-savingSchema.post('save', async function (doc) {
-  await updateWallet(doc.user.toString());
-});
+// // 1. On save (create)
+// savingSchema.post('save', async function (doc) {
+//   await updateWallet(doc.user.toString());
+// });
 
-// 2. On update
-savingSchema.post('findOneAndUpdate', async function () {
-  const updated = await this.model.findOne(this.getQuery());
-  if (updated) {
-    await updateWallet(updated.user.toString());
-  }
-});
+// // 2. On update
+// savingSchema.post('findOneAndUpdate', async function () {
+//   const updated = await this.model.findOne(this.getQuery());
+//   if (updated) {
+//     await updateWallet(updated.user.toString());
+//   }
+// });
 
-// 3. On findOneAndDelete
-savingSchema.post('findOneAndDelete', async function (doc: any) {
-  if (doc) {
-    await updateWallet(doc.user.toString());
-  }
-});
+// // 3. On findOneAndDelete
+// savingSchema.post('findOneAndDelete', async function (doc: any) {
+//   if (doc) {
+//     await updateWallet(doc.user.toString());
+//   }
+// });
 
-// 4. On deleteOne (optional, only if you use deleteOne())
-savingSchema.post('deleteOne', { document: false, query: true }, async function () {
-  const doc = await this.model.findOne(this.getQuery());
-  if (doc) {
-    await updateWallet(doc.user.toString());
-  }
-});
+// // 4. On deleteOne (optional, only if you use deleteOne())
+// savingSchema.post('deleteOne', { document: false, query: true }, async function () {
+//   const doc = await this.model.findOne(this.getQuery());
+//   if (doc) {
+//     await updateWallet(doc.user.toString());
+//   }
+// });
 
 
 export const SavingModel = mongoose.model<ISaving>('Saving', savingSchema);

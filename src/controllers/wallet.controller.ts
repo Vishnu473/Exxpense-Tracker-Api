@@ -1,45 +1,44 @@
 import { Request, Response } from 'express';
-import { WalletModel } from '../models/wallet.model';
 import { SavingModel } from '../models/saving.model';
 import { TransactionModel } from '../models/transaction.model';
 
-export const createWallet = async(req:Request, res:Response) => {
-  try {
-    const wallet = await WalletModel.create({
-      user_id: req?.user?._id,
-      balance: 0,
-      income: 0,
-      expense: 0,
-      savings: 0,
-    });
+// export const createWallet = async(req:Request, res:Response) => {
+//   try {
+//     const wallet = await WalletModel.create({
+//       user_id: req?.user?._id,
+//       balance: 0,
+//       income: 0,
+//       expense: 0,
+//       savings: 0,
+//     });
 
-    res.json({wallet:wallet,message:"wallet created successfully"});
-  } catch (error) {
-    console.error('Error creating wallet:', error);
-    res.status(500).json({ message: 'Server error while creating wallet' });
-    return;
-  }
-}
+//     res.json({wallet:wallet,message:"wallet created successfully"});
+//   } catch (error) {
+//     console.error('Error creating wallet:', error);
+//     res.status(500).json({ message: 'Server error while creating wallet' });
+//     return;
+//   }
+// }
 
-export const getWalletByUserId = async (req: Request, res: Response) => {
-  try {
-    const userId = req?.user?._id;
+// export const getWalletByUserId = async (req: Request, res: Response) => {
+//   try {
+//     const userId = req?.user?._id;
 
-    const wallet = await WalletModel.findOne({ user_id: userId });
+//     const wallet = await WalletModel.findOne({ user_id: userId });
 
-    if (!wallet) {
-      res.status(404).json({ message: 'Wallet not found' });
-      return;
-    }
+//     if (!wallet) {
+//       res.status(404).json({ message: 'Wallet not found' });
+//       return;
+//     }
 
-    res.json(wallet);
-    return;
-  } catch (error) {
-    console.error('Error fetching wallet:', error);
-    res.status(500).json({ message: 'Server error while fetching wallet' });
-    return;
-  }
-};
+//     res.json(wallet);
+//     return;
+//   } catch (error) {
+//     console.error('Error fetching wallet:', error);
+//     res.status(500).json({ message: 'Server error while fetching wallet' });
+//     return;
+//   }
+// };
 
 export const getWalletSummary = async (req: Request, res: Response) => {
   try {

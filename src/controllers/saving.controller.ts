@@ -23,25 +23,32 @@ export const createSaving = async (req: Request, res: Response) => {
       is_completed: false,
       current_amount: 0,
     };
-    const created = await SavingModel.create(newSaving);
-    
-    const categories = await CategoryModel.find({isUserDefined:false});
+
+
+    const categories = await CategoryModel.find({ isUserDefined: false });
     const savingCategory = categories.filter((cat) => cat.type === "saving");
-    const savingTransaction = {
-      amount: 0,
-      source: data.source,
-      source_detail:data.source_detail,
-      payment_app: data.payment_app,
-      description: `Initial saving: ${data.purpose}`,
-      user: req?.user?._id,
-      category_id: savingCategory[0]?._id,
-      category_type:'saving',
-      category_name:savingCategory[0]?.name,
-      status: 'Success',
-      transaction_date: new Date(data.transaction_date)
+    if (savingCategory.length > 0) {
+      console.log("There is a savingcategory from categories",categories);
+      
+      const created = await SavingModel.create(newSaving);
+      const savingTransaction = {
+        amount: 0,
+        source: data.source,
+        source_detail: data.source_detail,
+        payment_app: data.payment_app,
+        description: `Initial saving: ${data.purpose}`,
+        user: req?.user?._id,
+        category_id: savingCategory[0]?._id,
+        category_type: 'saving',
+        category_name: savingCategory[0]?.name,
+        status: 'Success',
+        transaction_date: new Date(data.transaction_date)
+      }
+      await TransactionModel.create(savingTransaction);
+      res.status(201).json(created);
     }
-    await TransactionModel.create(savingTransaction);
-    res.status(201).json(created);
+
+
     return;
 
   } catch (error) {
@@ -72,7 +79,7 @@ export const updateSaving = async (req: Request, res: Response) => {
     });
 
     console.log(existing);
-    
+
 
     if (!existing) {
       res.status(404).json({ message: 'Saving goal not found.' });
@@ -156,19 +163,19 @@ export const updateSaving = async (req: Request, res: Response) => {
       { new: true }
     );
 
-    const categories = await CategoryModel.find({isUserDefined:false});
+    const categories = await CategoryModel.find({ isUserDefined: false });
     const savingCategory = categories.filter((cat) => cat.type === "saving");
 
     const updateSavingTransaction = {
-      amount:  Number(req.body["current_amount"])-existing.current_amount,
+      amount: Number(req.body["current_amount"]) - existing.current_amount,
       source: existing.source,
-      source_detail:existing.source_detail,
+      source_detail: existing.source_detail,
       payment_app: existing.payment_app,
       description: `Added to saving: ${updateData.purpose}`,
       user: req?.user?._id,
       category_id: savingCategory[0]?._id,
-      category_type:'saving',
-      category_name:savingCategory[0]?.name,
+      category_type: 'saving',
+      category_name: savingCategory[0]?.name,
       status: 'Success',
       transaction_date: new Date(new Date(req.body["transaction_date"]).toISOString().split('T')[0])
     }

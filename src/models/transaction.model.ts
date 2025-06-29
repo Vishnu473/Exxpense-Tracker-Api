@@ -1,6 +1,5 @@
 import mongoose from 'mongoose';
 import { ITransaction } from '../interfaces/transaction.interface';
-import { updateWallet } from '../utils/wallet.utils';
 
 const transactionSchema = new mongoose.Schema<ITransaction>(
   {
@@ -20,32 +19,32 @@ const transactionSchema = new mongoose.Schema<ITransaction>(
 );
 
 // 1. CREATE
-transactionSchema.post('save', async function (doc) {
-  await updateWallet(doc.user.toString());
-});
+// transactionSchema.post('save', async function (doc) {
+//   await updateWallet(doc.user.toString());
+// });
 
-// 2. UPDATE
-transactionSchema.post('findOneAndUpdate', async function () {
-  const updated = await this.model.findOne(this.getQuery());
-  if (updated) {
-    await updateWallet(updated.user.toString());
-  }
-});
+// // 2. UPDATE
+// transactionSchema.post('findOneAndUpdate', async function () {
+//   const updated = await this.model.findOne(this.getQuery());
+//   if (updated) {
+//     await updateWallet(updated.user.toString());
+//   }
+// });
 
-// 3. DELETE (findOneAndDelete)
-transactionSchema.post('findOneAndDelete', async function (doc: any) {
-  if (doc) {
-    await updateWallet(doc.user.toString());
-  }
-});
+// // 3. DELETE (findOneAndDelete)
+// transactionSchema.post('findOneAndDelete', async function (doc: any) {
+//   if (doc) {
+//     await updateWallet(doc.user.toString());
+//   }
+// });
 
-// 4. DELETE (deleteOne) – optional if you use deleteOne directly
-transactionSchema.post('deleteOne', { document: false, query: true }, async function () {
-  const doc = await this.model.findOne(this.getQuery());
-  if (doc) {
-    await updateWallet(doc.user.toString());
-  }
-});
+// // 4. DELETE (deleteOne) – optional if you use deleteOne directly
+// transactionSchema.post('deleteOne', { document: false, query: true }, async function () {
+//   const doc = await this.model.findOne(this.getQuery());
+//   if (doc) {
+//     await updateWallet(doc.user.toString());
+//   }
+// });
 
 
 export const TransactionModel = mongoose.model<ITransaction>('Transaction', transactionSchema);

@@ -2,9 +2,11 @@ import { Request, Response } from 'express';
 import { UserModel } from '../models/user.model';
 import { hashPassword, comparePassword } from '../utils/hash.utils';
 import { generateAccessToken, generateRefreshToken, verifyToken } from '../utils/jwt.utils';
-import { WalletModel } from '../models/wallet.model';
+
 import { IUser } from '../interfaces/user.interface';
 import jwt, { JwtPayload } from 'jsonwebtoken';
+import mongoose from 'mongoose';
+import { CategoryModel } from '../models/category.model';
 
 export const registerUser = async (req: Request, res: Response) => {
   try {
@@ -17,13 +19,8 @@ export const registerUser = async (req: Request, res: Response) => {
 
     const hashed = await hashPassword(password);
     const user = await UserModel.create({ name, email, phone, password: hashed });
-    await WalletModel.create({
-      user_id: user._id,
-      balance: 0,
-      income: 0,
-      expense: 0,
-      savings: 0,
-    });
+    
+    await createSavingsCategory(user?._id);
 
     const token = generateAccessToken(user._id.toString());
     res.cookie('token', token, {
@@ -45,9 +42,24 @@ export const registerUser = async (req: Request, res: Response) => {
     return;
   } catch (error) {
     res.status(500).json({ message: 'Failed to register user', error });
+    console.log(error);
+    
     return;
   }
 };
+
+const createSavingsCategory = async(id:mongoose.Types.ObjectId) => {
+  try {
+    await CategoryModel.create({
+      name:'Other',
+      type:'saving',
+      user:id,
+      isUserDefined: false
+    })
+  } catch (error) {
+    console.log("Creating pre-defined category for a user",error);
+  }
+}
 
 export const loginUser = async (req: Request, res: Response) => {
   try {
