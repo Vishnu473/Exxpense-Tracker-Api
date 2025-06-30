@@ -14,18 +14,34 @@ import secureRoutes from "./routes/secure.route";
 
 dotenv.config();
 
-const corsOptions={
-    origin: process.env.CORS_ORIGIN,
-    methods: ["GET", "POST", "PUT", "DELETE","PATCH"],
-  credentials: true,
-}
+// const corsOptions={
+//     origin: process.env.CORS_ORIGIN,
+//     methods: ["GET", "POST", "PUT", "DELETE","PATCH"],
+//   credentials: true,
+// }
 const app = express();
 const port = process.env.PORT || 8080;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+
+const allowedOrigins = process.env.CORS_ORIGIN?.split(",") ?? [];
+
+const corsOptions = {
+  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true); // Allow the request
+    } else {
+      callback(new Error("Not allowed by CORS")); // Block the request
+    }
+  },
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+  credentials: true,
+};
+
 app.use(cors(corsOptions));
+
 
 app.use('/api/v1/user', userRoutes);
 app.use('/api/v1/category', categoryRoutes);
