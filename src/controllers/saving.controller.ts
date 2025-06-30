@@ -75,7 +75,7 @@ export const updateSaving = async (req: Request, res: Response) => {
 
     const existing = await SavingModel.findOne({
       _id: id,
-      user: req.user._id
+      user: req?.user?._id
     });
 
 
@@ -170,7 +170,7 @@ export const updateSaving = async (req: Request, res: Response) => {
     }
 
     const updated = await SavingModel.findOneAndUpdate(
-      { _id: id, user: req.user._id },
+      { _id: id, user: req?.user?._id },
       updateData,
       { new: true }
     );
