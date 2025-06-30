@@ -6,9 +6,6 @@ export const protect = async (req: Request, res: Response, next: NextFunction) =
   const accessToken = req.cookies.token;
   const refreshToken = req.cookies.refreshToken;
   
-  console.log("accessToken",accessToken);
-  console.log("refreshToken",refreshToken);
-  
   if (!accessToken) {
     res.status(401).json({ message: 'Not authenticated' });
     return;
@@ -50,7 +47,7 @@ export const protect = async (req: Request, res: Response, next: NextFunction) =
             maxAge: 21 * 24 * 60 * 60 * 1000,
           });
 
-          console.log("Just refreshed the refesh token");
+          console.info("Just refreshed the refesh token");
         }
 
         // Always issue a new access token
@@ -62,13 +59,13 @@ export const protect = async (req: Request, res: Response, next: NextFunction) =
           maxAge: 7 * 24 * 60 * 60 * 1000,
         });
 
-        console.log("Just refreshed the Access token");
+        console.info("Just refreshed the Access token");
         
 
         req.user = user;
         next();
       } catch (refreshErr) {
-        console.log("Error in Middleware");
+        console.info("Error in Middleware");
         res.status(401).json({ message: 'Session expired. Please login again.' });
         return;
       }

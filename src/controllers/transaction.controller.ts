@@ -152,8 +152,6 @@ export const updateTransaction = async (req: Request, res: Response) => {
 
 export const getTransactions = async (req: Request, res: Response) => {
   try {
-    // Validate query parameters
-    console.log("Query : ",req.query);
     const queryValidation = getTransactionsQuerySchema.safeParse(req.query);
     
     if (!queryValidation.success) {

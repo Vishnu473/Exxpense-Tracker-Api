@@ -43,8 +43,6 @@ import { TransactionModel } from '../models/transaction.model';
 export const getWalletSummary = async (req: Request, res: Response) => {
   try {
     const userId = req.user?._id;
-
-    console.log(userId);
     
     // Aggregate income
     const incomeAgg = await TransactionModel.aggregate([
@@ -68,7 +66,6 @@ export const getWalletSummary = async (req: Request, res: Response) => {
     const savings = savingsAgg[0]?.total || 0;
 
     const balance = income - expense - savings;
-    console.log(balance,income,expense, savings);
     
     res.status(200).json({ income, expense, savings, balance });
     return;

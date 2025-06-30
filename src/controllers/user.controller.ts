@@ -42,8 +42,6 @@ export const registerUser = async (req: Request, res: Response) => {
     return;
   } catch (error) {
     res.status(500).json({ message: 'Failed to register user', error });
-    console.log(error);
-    
     return;
   }
 };
@@ -57,7 +55,7 @@ const createSavingsCategory = async(id:mongoose.Types.ObjectId) => {
       isUserDefined: false
     })
   } catch (error) {
-    console.log("Creating pre-defined category for a user",error);
+    console.error("Creating pre-defined category for a user",error);
   }
 }
 
@@ -127,7 +125,7 @@ export const refresh = async (req: Request, res: Response) => {
 
     res.status(200).json({ message: 'Refreshed' });
   } catch (err) {
-    console.log('Refresh failed:', err);
+    console.warn('Refresh failed:', err);
     res.status(401).json({ message: 'Refresh token expired' });
     return;
   }

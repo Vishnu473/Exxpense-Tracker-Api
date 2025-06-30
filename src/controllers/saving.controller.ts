@@ -5,6 +5,7 @@ import { ISaving } from '../interfaces/saving.interface';
 import { TransactionModel } from '../models/transaction.model';
 import { ITransaction } from '../interfaces/transaction.interface';
 import { CategoryModel } from '../models/category.model';
+import { deleteImageFromStorage } from '../utils/deleteImageFromStorage';
 
 export const createSaving = async (req: Request, res: Response) => {
   try {
@@ -28,7 +29,6 @@ export const createSaving = async (req: Request, res: Response) => {
     const categories = await CategoryModel.find({ isUserDefined: false });
     const savingCategory = categories.filter((cat) => cat.type === "saving");
     if (savingCategory.length > 0) {
-      console.log("There is a savingcategory from categories",categories);
       
       const created = await SavingModel.create(newSaving);
       const savingTransaction = {
@@ -78,13 +78,25 @@ export const updateSaving = async (req: Request, res: Response) => {
       user: req.user._id
     });
 
-    console.log(existing);
-
 
     if (!existing) {
       res.status(404).json({ message: 'Saving goal not found.' });
       return;
     }
+
+    const oldImageUrl = existing.pic;
+    const newImageUrl = req.body.pic;
+
+    const isNewImageUploaded = newImageUrl && newImageUrl !== oldImageUrl;
+
+    if (
+      isNewImageUploaded &&
+      oldImageUrl &&
+      !oldImageUrl.includes('dummyimage.com')
+    ) {
+      await deleteImageFromStorage(oldImageUrl);
+    }
+
 
     const forbiddenFields: (keyof ISaving)[] = [
       'amount',
