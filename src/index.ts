@@ -1,3 +1,4 @@
+/// <reference path="./types/express-custom.d.ts" />
 import dotenv from "dotenv";
 import express, { Request, Response } from "express";
 import { connectDB } from "./config/db";
