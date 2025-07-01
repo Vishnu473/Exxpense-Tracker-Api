@@ -29,7 +29,7 @@ export const createCategory = async (req: Request, res: Response) => {
 
 export const getCategories = async (req: Request, res: Response) => {
     try {
-        const predefined = await CategoryModel.find({ isUserDefined: false });
+        const predefined = await CategoryModel.find({ user: req?.user?._id, isUserDefined: false });
         const userDefined = await CategoryModel.find({ user: req?.user?._id, isUserDefined: true });
         res.status(200).json([...userDefined, ...predefined,]);
     } catch (error) {
