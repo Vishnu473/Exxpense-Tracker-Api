@@ -19,7 +19,7 @@ export const registerUser = async (req: Request, res: Response) => {
 
     const hashed = await hashPassword(password);
     const user = await UserModel.create({ name, email, phone, password: hashed });
-    
+
     await createSavingsCategory(user?._id);
 
     const token = generateAccessToken(user._id.toString());
@@ -27,7 +27,7 @@ export const registerUser = async (req: Request, res: Response) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'none',
-      maxAge: 7* 24 * 60 * 60 * 1000,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
     const newRefreshToken = generateRefreshToken(user?._id.toString());
@@ -46,16 +46,16 @@ export const registerUser = async (req: Request, res: Response) => {
   }
 };
 
-const createSavingsCategory = async(id:mongoose.Types.ObjectId) => {
+const createSavingsCategory = async (id: mongoose.Types.ObjectId) => {
   try {
     await CategoryModel.create({
-      name:'Other',
-      type:'saving',
-      user:id,
+      name: 'Other',
+      type: 'saving',
+      user: id,
       isUserDefined: false
     })
   } catch (error) {
-    console.error("Creating pre-defined category for a user",error);
+    console.error("Creating pre-defined category for a user", error);
   }
 }
 
@@ -112,14 +112,14 @@ export const refresh = async (req: Request, res: Response) => {
     const decoded = verifyToken(token) as JwtPayload;
 
     const newAccessToken = generateAccessToken(decoded.userId);
-    res.cookie('token', newAccessToken, { httpOnly: true, sameSite: 'none', secure: false });
+    res.cookie('token', newAccessToken, { httpOnly: true, sameSite: 'none', secure: process.env.NODE_ENV === 'production', maxAge: 7 * 24 * 60 * 60 * 1000 });
 
     // Rotate refresh token if near expiry
     if (typeof decoded.exp === 'number') {
       const expiresInMs = decoded.exp * 1000 - Date.now();
       if (expiresInMs < 3 * 60 * 1000) {
         const newRefreshToken = generateRefreshToken(decoded.userId);
-        res.cookie('refreshToken', newRefreshToken, { httpOnly: true, sameSite: 'none', secure: false });
+        res.cookie('refreshToken', newRefreshToken, { httpOnly: true, sameSite: 'none', secure: process.env.NODE_ENV === 'production', path: '/auth/refresh', maxAge: 21 * 24 * 60 * 60 * 1000 });
       }
     }
 
@@ -240,8 +240,18 @@ export const getPaymentSources = async (req: Request, res: Response) => {
 
 export const logoutUser = (req: Request, res: Response) => {
   try {
-    res.clearCookie('token');
-    res.clearCookie('refreshToken').json({ message: 'Logged out successfully' });
+    res.clearCookie('token', {
+      httpOnly: true,
+      sameSite: 'none',
+      secure: process.env.NODE_ENV === 'production',
+    });
+    res.clearCookie('refreshToken', {
+      httpOnly: true,
+      sameSite: 'none',
+      secure: process.env.NODE_ENV === 'production',
+    });
+    res.status(200).json({ message: 'Logged out successfully' });
+
   } catch (error) {
     res.status(500).json({ message: 'Failed to logout', error });
     return;
